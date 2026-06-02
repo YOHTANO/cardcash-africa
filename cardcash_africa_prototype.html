@@ -1,599 +1,493 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --bg:#0F172A;--surface:#1E293B;--surface2:#334155;
-    --green:#10B981;--green2:#059669;--green3:#D1FAE5;
-    --text:#F8FAFC;--text2:#94A3B8;--text3:#64748B;
-    --border:#334155;--card:#1E293B;
-    --r:16px;--rs:8px;
-  }
-  body{font-family:'Plus Jakarta Sans',sans-serif;background:transparent;display:flex;justify-content:center;padding:16px 0;}
-  .phone{width:340px;height:680px;background:var(--bg);border-radius:36px;overflow:hidden;position:relative;border:1px solid var(--surface2);}
-  .screen{position:absolute;inset:0;padding:0;overflow:hidden;display:none;flex-direction:column;}
-  .screen.active{display:flex;}
-
-  /* Status bar */
-  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 0;font-size:11px;color:var(--text2);}
-  .statusbar .time{font-weight:700;color:var(--text);}
-  .statusbar .icons{display:flex;gap:4px;align-items:center;}
-  .bat{width:20px;height:10px;border:1.5px solid var(--text2);border-radius:2px;position:relative;}
-  .bat::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:2px;height:5px;background:var(--text2);border-radius:1px;}
-  .bat-fill{height:100%;width:70%;background:var(--green);border-radius:1px;}
-
-  /* Splash */
-  #splash{background:linear-gradient(160deg,#0F172A 0%,#0F2B1F 100%);align-items:center;justify-content:center;gap:16px;}
-  .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
-  .logo-icon{width:72px;height:72px;background:var(--green);border-radius:20px;display:flex;align-items:center;justify-content:center;}
-  .logo-icon svg{width:38px;height:38px;}
-  .logo-name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px;}
-  .logo-name span{color:var(--green);}
-  .logo-tagline{font-size:13px;color:var(--text2);text-align:center;max-width:200px;line-height:1.5;}
-  .dots-splash{display:flex;gap:6px;margin-top:32px;}
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--surface2);}
-  .dot.active{background:var(--green);width:20px;}
-
-  /* Onboarding */
-  #onboard{background:var(--bg);}
-  .onboard-illustration{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-  .illus-card{width:200px;height:130px;background:var(--surface);border-radius:16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
-  .illus-icon{width:52px;height:52px;background:rgba(16,185,129,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;}
-  .onboard-bottom{padding:20px 24px 32px;}
-  .onboard-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.2;}
-  .onboard-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:24px;}
-  .progress-dots{display:flex;gap:6px;margin-bottom:20px;}
-  .btn-full{width:100%;padding:14px;background:var(--green);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;}
-  .btn-skip{background:none;border:none;color:var(--text3);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;cursor:pointer;width:100%;text-align:center;margin-top:10px;}
-
-  /* Auth */
-  #auth{background:var(--bg);}
-  .auth-header{padding:20px 24px 0;display:flex;align-items:center;gap:12px;}
-  .back-btn{width:36px;height:36px;background:var(--surface);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;}
-  .auth-body{padding:24px;flex:1;overflow-y:auto;}
-  .auth-title{font-size:24px;font-weight:800;color:var(--text);margin-bottom:6px;}
-  .auth-sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
-  .field{margin-bottom:16px;}
-  .field label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
-  .field input{width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;}
-  .field input::placeholder{color:var(--text3);}
-  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
-  .divider hr{flex:1;border:none;border-top:1px solid var(--border);}
-  .divider span{font-size:12px;color:var(--text3);}
-  .btn-google{width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
-  .auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--text2);}
-  .auth-switch a{color:var(--green);font-weight:600;cursor:pointer;text-decoration:none;}
-
-  /* Dashboard */
-  #dashboard{background:var(--bg);}
-  .dash-header{padding:16px 20px 0;}
-  .dash-greeting{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-  .dash-name{font-size:13px;color:var(--text2);}
-  .dash-hello{font-size:18px;font-weight:800;color:var(--text);}
-  .avatar{width:38px;height:38px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;cursor:pointer;}
-  .balance-card{margin:0 20px 20px;background:linear-gradient(135deg,#10B981,#059669);border-radius:20px;padding:20px;}
-  .bal-label{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px;}
-  .bal-amount{font-size:32px;font-weight:800;color:#fff;margin-bottom:16px;}
-  .bal-row{display:flex;gap:16px;}
-  .bal-stat{background:rgba(0,0,0,.15);border-radius:10px;padding:10px 14px;flex:1;}
-  .bal-stat .stat-val{font-size:16px;font-weight:700;color:#fff;}
-  .bal-stat .stat-label{font-size:11px;color:rgba(255,255,255,.7);}
-  .quick-actions{padding:0 20px;margin-bottom:20px;}
-  .section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;}
-  .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .action-btn{background:var(--surface);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;border:1px solid var(--border);}
-  .action-btn:hover{background:var(--surface2);}
-  .action-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
-  .action-label{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
-  .recent-section{padding:0 20px;flex:1;overflow-y:auto;}
-  .tx-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
-  .tx-logo{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
-  .tx-info{flex:1;}
-  .tx-name{font-size:14px;font-weight:600;color:var(--text);}
-  .tx-date{font-size:11px;color:var(--text3);}
-  .tx-amount{text-align:right;}
-  .tx-val{font-size:14px;font-weight:700;}
-  .tx-status{font-size:11px;}
-  .status-paid{color:var(--green);}
-  .status-pending{color:#F59E0B;}
-  .status-verif{color:#3B82F6;}
-  .nav-bar{display:flex;padding:10px 0 16px;border-top:1px solid var(--border);margin-top:auto;}
-  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;}
-  .nav-item svg{opacity:.4;}
-  .nav-item.active svg{opacity:1;}
-  .nav-label{font-size:10px;color:var(--text3);}
-  .nav-item.active .nav-label{color:var(--green);}
-
-  /* Catalogue */
-  #catalogue{background:var(--bg);}
-  .cat-header{padding:16px 20px;display:flex;align-items:center;gap:12px;}
-  .cat-title{font-size:18px;font-weight:800;color:var(--text);}
-  .search-bar{margin:0 20px 16px;background:var(--surface);border-radius:var(--rs);display:flex;align-items:center;padding:10px 14px;gap:10px;border:1px solid var(--border);}
-  .search-bar input{background:none;border:none;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;flex:1;}
-  .search-bar input::placeholder{color:var(--text3);}
-  .cards-grid{padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;flex:1;}
-  .gift-card{background:var(--surface);border-radius:14px;padding:14px;cursor:pointer;border:1px solid var(--border);position:relative;overflow:hidden;}
-  .gift-card:hover{border-color:var(--green);}
-  .gc-logo{width:40px;height:40px;border-radius:10px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
-  .gc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
-  .gc-rate{font-size:12px;color:var(--green);font-weight:600;}
-  .gc-badge{position:absolute;top:8px;right:8px;background:rgba(16,185,129,.15);color:var(--green);font-size:9px;font-weight:700;padding:3px 7px;border-radius:20px;}
-
-  /* Sell flow */
-  #sell{background:var(--bg);}
-  #sell .auth-header{padding:16px 20px 0;}
-  .sell-body{padding:16px 20px;flex:1;overflow-y:auto;}
-  .steps-indicator{display:flex;gap:4px;margin-bottom:24px;}
-  .step-seg{flex:1;height:4px;border-radius:2px;background:var(--surface2);}
-  .step-seg.done{background:var(--green);}
-  .calc-box{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:16px;}
-  .calc-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
-  .calc-row:last-child{border-bottom:none;}
-  .calc-key{font-size:13px;color:var(--text2);}
-  .calc-val{font-size:13px;font-weight:600;color:var(--text);}
-  .calc-total{font-size:16px;font-weight:800;color:var(--green);}
-  .amount-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-  .amount-chip{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);}
-  .amount-chip.active{background:rgba(16,185,129,.12);border-color:var(--green);color:var(--green);}
-  .upload-area{background:var(--surface);border:1.5px dashed var(--border);border-radius:14px;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;}
-  .upload-icon{width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;}
-  .upload-label{font-size:13px;color:var(--text2);}
-  .upload-sub{font-size:11px;color:var(--text3);margin-top:4px;}
-
-  /* Transaction status */
-  #txstatus{background:var(--bg);}
-  .tx-header{padding:16px 20px 0;}
-  .tx-body{padding:24px 20px;flex:1;}
-  .tx-card-big{background:var(--surface);border-radius:20px;padding:20px;margin-bottom:20px;}
-  .tx-logo-big{width:56px;height:56px;border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;}
-  .tx-title-big{text-align:center;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
-  .tx-amount-big{text-align:center;font-size:28px;font-weight:800;color:var(--green);margin-bottom:16px;}
-  .tx-details{display:flex;flex-direction:column;gap:0;}
-  .tx-detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
-  .tx-detail-row:last-child{border-bottom:none;}
-  .td-key{font-size:12px;color:var(--text3);}
-  .td-val{font-size:12px;font-weight:600;color:var(--text);}
-  .timeline{margin-top:20px;}
-  .tl-item{display:flex;gap:14px;padding-bottom:20px;position:relative;}
-  .tl-item:last-child{padding-bottom:0;}
-  .tl-item::before{content:'';position:absolute;left:14px;top:28px;width:1.5px;height:calc(100% - 8px);background:var(--border);}
-  .tl-item:last-child::before{display:none;}
-  .tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
-  .tl-dot.done{background:rgba(16,185,129,.2);}
-  .tl-dot.active{background:rgba(245,158,11,.2);}
-  .tl-dot.wait{background:var(--surface2);}
-  .tl-step{font-size:13px;font-weight:600;color:var(--text);}
-  .tl-time{font-size:11px;color:var(--text3);margin-top:2px;}
-
-  /* Withdraw */
-  #withdraw{background:var(--bg);}
-  .method-list{padding:0 20px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-  .method-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
-  .method-item.active{border-color:var(--green);background:rgba(16,185,129,.06);}
-  .method-logo{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
-  .method-name{font-size:14px;font-weight:600;color:var(--text);}
-  .method-sub{font-size:11px;color:var(--text3);}
-  .method-check{margin-left:auto;width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;}
-
-  .btn-outline{width:100%;padding:14px;background:none;border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
-
-  .floating-toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--green2);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none;}
-  .floating-toast.show{opacity:1;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CardCash Africa - Vendez vos cartes cadeaux instantanément">
+  <title>CardCash Africa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="phone">
+<div class="phone" role="application" aria-label="CardCash Africa App">
 
-<!-- SPLASH SCREEN -->
-<div class="screen active" id="splash">
-  <div class="logo-wrap">
-    <div class="logo-icon">
-      <svg viewBox="0 0 38 38" fill="none">
-        <rect x="4" y="10" width="30" height="20" rx="4" fill="white" opacity=".9"/>
-        <rect x="4" y="15" width="30" height="5" fill="#0F172A" opacity=".4"/>
-        <circle cx="10" cy="24" r="3" fill="#0F172A" opacity=".4"/>
-        <circle cx="28" cy="24" r="3" fill="#0F172A" opacity=".4"/>
-        <path d="M25 6 L19 12 L13 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="logo-name">Card<span>Cash</span></div>
-    <div style="font-size:11px;color:var(--green);font-weight:700;letter-spacing:2px;">AFRICA</div>
-    <div class="logo-tagline">Vendez vos cartes cadeaux instantanément</div>
-    <div class="dots-splash">
-      <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
-    </div>
-    <button class="btn-full" style="width:220px;margin-top:12px;" onclick="go('onboard')">Commencer →</button>
-  </div>
-</div>
-
-<!-- ONBOARDING -->
-<div class="screen" id="onboard">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="onboard-illustration">
-    <div class="illus-card">
-      <div class="illus-icon">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <path d="M6 10h16M6 14h8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
-          <rect x="3" y="6" width="22" height="16" rx="3" stroke="#10B981" stroke-width="1.5"/>
+  <!-- SPLASH SCREEN -->
+  <div class="screen active" id="splash" role="main">
+    <div class="logo-wrap">
+      <div class="logo-icon" aria-label="Logo CardCash">
+        <svg viewBox="0 0 38 38" fill="none" aria-hidden="true">
+          <rect x="4" y="10" width="30" height="20" rx="4" fill="white" opacity=".9"/>
+          <rect x="4" y="15" width="30" height="5" fill="#0F172A" opacity=".4"/>
+          <circle cx="10" cy="24" r="3" fill="#0F172A" opacity=".4"/>
+          <circle cx="28" cy="24" r="3" fill="#0F172A" opacity=".4"/>
+          <path d="M25 6 L19 12 L13 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);">Vente rapide</div>
-      <div style="font-size:11px;color:var(--text3);">Moins de 2 minutes</div>
-    </div>
-    <div style="margin-top:20px;display:flex;gap:12px;">
-      <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:var(--green);">8+</div>
-        <div style="font-size:10px;color:var(--text3);">Cartes</div>
+      <div class="logo-name">Card<span>Cash</span></div>
+      <div style="font-size:11px;color:var(--green);font-weight:700;letter-spacing:2px;">AFRICA</div>
+      <div class="logo-tagline">Vendez vos cartes cadeaux instantanément</div>
+      <div class="dots-splash" role="progressbar" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
       </div>
-      <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:var(--text);">85%</div>
-        <div style="font-size:10px;color:var(--text3);">Taux moyen</div>
-      </div>
-      <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:var(--text);">24/7</div>
-        <div style="font-size:10px;color:var(--text3);">Disponible</div>
-      </div>
+      <button class="btn-full" style="width:220px;margin-top:12px;" data-screen="onboard">Commencer →</button>
     </div>
   </div>
-  <div class="onboard-bottom">
-    <div class="progress-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
-    <div class="onboard-title">Vendez en quelques clics</div>
-    <div class="onboard-desc">Choisissez votre carte, soumettez le code et recevez votre argent via Mobile Money.</div>
-    <button class="btn-full" onclick="go('auth')">Suivant →</button>
-    <button class="btn-skip" onclick="go('auth')">Passer</button>
-  </div>
-</div>
 
-<!-- AUTH -->
-<div class="screen" id="auth">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="auth-header">
-    <button class="back-btn" onclick="go('splash')">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <div style="font-size:13px;color:var(--text2);">Connexion</div>
-  </div>
-  <div class="auth-body">
-    <div class="auth-title">Bon retour 👋</div>
-    <div class="auth-sub">Connectez-vous pour continuer</div>
-    <div class="field"><label>Téléphone ou Email</label><input type="text" placeholder="+225 07 00 00 00 00"></div>
-    <div class="field"><label>Mot de passe</label><input type="password" placeholder="••••••••"></div>
-    <div style="text-align:right;margin-bottom:20px;"><a style="font-size:12px;color:var(--green);cursor:pointer;">Mot de passe oublié ?</a></div>
-    <button class="btn-full" onclick="go('dashboard')">Se connecter</button>
-    <div class="divider"><hr><span>ou</span><hr></div>
-    <button class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-      Continuer avec Google
-    </button>
-    <div class="auth-switch">Pas de compte ? <a onclick="go('dashboard')">Inscrivez-vous</a></div>
-  </div>
-</div>
-
-<!-- DASHBOARD -->
-<div class="screen" id="dashboard">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="dash-header">
-    <div class="dash-greeting">
-      <div><div class="dash-name">Bonjour 👋</div><div class="dash-hello">Koné Mamadou</div></div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div style="position:relative;cursor:pointer;" onclick="showToast()">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2a7 7 0 017 7c0 5.25 2 6.5 2 6.5H2S4 16.25 4 9a7 7 0 017-7zM9.5 19a1.5 1.5 0 003 0" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg);"></div>
-        </div>
-        <div class="avatar" onclick="go('auth')">KM</div>
+  <!-- ONBOARDING -->
+  <div class="screen" id="onboard" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true">
+        <div class="bat"><div class="bat-fill"></div></div>
       </div>
-    </div>
-  </div>
-  <div style="overflow-y:auto;flex:1;padding-bottom:0;">
-    <div class="balance-card">
-      <div class="bal-label">Solde disponible</div>
-      <div class="bal-amount">47 850 <span style="font-size:16px;opacity:.8;">FCFA</span></div>
-      <div class="bal-row">
-        <div class="bal-stat"><div class="stat-val">12</div><div class="stat-label">Transactions</div></div>
-        <div class="bal-stat"><div class="stat-val">185k</div><div class="stat-label">Total vendu</div></div>
-        <div class="bal-stat"><div class="stat-val">85%</div><div class="stat-label">Taux moyen</div></div>
+    </header>
+    <div class="onboard-illustration">
+      <div class="illus-card">
+        <div class="illus-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M6 10h16M6 14h8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+            <rect x="3" y="6" width="22" height="16" rx="3" stroke="#10B981" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Vente rapide</div>
+        <div style="font-size:11px;color:var(--text3);">Moins de 2 minutes</div>
       </div>
-    </div>
-    <div class="quick-actions">
-      <div class="section-title">Actions rapides</div>
-      <div class="actions-grid">
-        <div class="action-btn" onclick="go('catalogue')">
-          <div class="action-icon" style="background:rgba(16,185,129,.15);">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="11" rx="2" stroke="#10B981" stroke-width="1.5"/><path d="M2 8h16" stroke="#10B981" stroke-width="1.5"/><circle cx="6" cy="13" r="1.5" fill="#10B981"/></svg>
-          </div>
-          <div class="action-label">Vendre une carte</div>
+      <div style="margin-top:20px;display:flex;gap:12px;">
+        <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:var(--green);">8+</div>
+          <div style="font-size:10px;color:var(--text3);">Cartes</div>
         </div>
-        <div class="action-btn" onclick="go('withdraw')">
-          <div class="action-icon" style="background:rgba(59,130,246,.15);">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M4 9l6-6 6 6" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <div class="action-label">Retirer l'argent</div>
+        <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:var(--text);">85%</div>
+          <div style="font-size:10px;color:var(--text3);">Taux moyen</div>
         </div>
-        <div class="action-btn" onclick="go('txstatus')">
-          <div class="action-icon" style="background:rgba(245,158,11,.15);">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10h14M3 6h14M3 14h8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <div class="action-label">Historique</div>
-        </div>
-        <div class="action-btn" onclick="showToast('Message envoyé au support ✓')">
-          <div class="action-icon" style="background:rgba(168,85,247,.15);">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2H6l-4 3V4z" stroke="#A855F7" stroke-width="1.5" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="action-label">Support</div>
+        <div style="background:var(--surface);border-radius:10px;padding:10px 14px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:var(--text);">24/7</div>
+          <div style="font-size:10px;color:var(--text3);">Disponible</div>
         </div>
       </div>
     </div>
-    <div class="recent-section">
-      <div class="section-title">Transactions récentes</div>
-      <div class="tx-item">
-        <div class="tx-logo" style="background:rgba(252,196,86,.15);color:#FCBB0A;">APP</div>
-        <div class="tx-info"><div class="tx-name">iTunes 50€</div><div class="tx-date">Aujourd'hui, 09:12</div></div>
-        <div class="tx-amount"><div class="tx-val status-paid">+42 500</div><div class="tx-status status-paid">Payée</div></div>
+    <div class="onboard-bottom">
+      <div class="progress-dots" role="progressbar" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
       </div>
-      <div class="tx-item">
-        <div class="tx-logo" style="background:rgba(52,211,153,.15);color:#10B981;">BTN</div>
-        <div class="tx-info"><div class="tx-name">Bitnovo 25€</div><div class="tx-date">Hier, 14:30</div></div>
-        <div class="tx-amount"><div class="tx-val" style="color:var(--text2);">+20 000</div><div class="tx-status status-verif">Vérification</div></div>
-      </div>
-      <div class="tx-item">
-        <div class="tx-logo" style="background:rgba(99,102,241,.15);color:#818CF8;">STM</div>
-        <div class="tx-info"><div class="tx-name">Steam 100€</div><div class="tx-date">22 jan, 11:05</div></div>
-        <div class="tx-amount"><div class="tx-val status-paid">+82 000</div><div class="tx-status status-paid">Payée</div></div>
-      </div>
-      <div style="height:16px;"></div>
+      <div class="onboard-title">Vendez en quelques clics</div>
+      <div class="onboard-desc">Choisissez votre carte, soumettez le code et recevez votre argent via Mobile Money.</div>
+      <button class="btn-full" data-screen="auth">Suivant →</button>
+      <button class="btn-skip" data-screen="auth">Passer</button>
     </div>
   </div>
-  <div class="nav-bar">
-    <div class="nav-item active">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9L10 3l7 6v9H13v-5H7v5H3V9z" stroke="#10B981" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      <span class="nav-label" style="color:var(--green);">Accueil</span>
+
+  <!-- AUTH -->
+  <div class="screen" id="auth" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <div class="auth-header">
+      <button class="back-btn" data-screen="splash" aria-label="Retour à l'accueil">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="font-size:13px;color:var(--text2);">Connexion</div>
     </div>
-    <div class="nav-item" onclick="go('catalogue')">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/><rect x="11" y="3" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/><rect x="2" y="12" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/><rect x="11" y="12" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/></svg>
-      <span class="nav-label">Cartes</span>
-    </div>
-    <div class="nav-item" onclick="go('txstatus')">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h8" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span class="nav-label">Historique</span>
-    </div>
-    <div class="nav-item" onclick="go('withdraw')">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="12" rx="2" stroke="#64748B" stroke-width="1.5"/><path d="M3 9h14M7 13h2" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span class="nav-label">Retrait</span>
+    <div class="auth-body">
+      <div class="auth-title">Bon retour 👋</div>
+      <div class="auth-sub">Connectez-vous pour continuer</div>
+      <form id="authForm">
+        <div class="field">
+          <label for="phoneEmail">Téléphone ou Email</label>
+          <input id="phoneEmail" type="text" placeholder="+225 07 00 00 00 00" required>
+        </div>
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input id="password" type="password" placeholder="••••••••" required>
+        </div>
+        <div style="text-align:right;margin-bottom:20px;">
+          <a href="#" style="font-size:12px;color:var(--green);cursor:pointer;text-decoration:none;">Mot de passe oublié ?</a>
+        </div>
+        <button type="button" class="btn-full" data-screen="dashboard">Se connecter</button>
+      </form>
+      <div class="divider"><hr><span>ou</span><hr></div>
+      <button class="btn-google" aria-label="Continuer avec Google">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        </svg>
+        Continuer avec Google
+      </button>
+      <div class="auth-switch">Pas de compte ? <a href="#" data-screen="dashboard" style="text-decoration:none;">Inscrivez-vous</a></div>
     </div>
   </div>
-  <div class="floating-toast" id="toast">3 notifications non lues</div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="dashboard" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <div class="dash-header">
+      <div class="dash-greeting">
+        <div><div class="dash-name">Bonjour 👋</div><div class="dash-hello">Koné Mamadou</div></div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button type="button" style="position:relative;cursor:pointer;background:none;border:none;padding:0;" aria-label="Notifications" title="Afficher les notifications">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path d="M11 2a7 7 0 017 7c0 5.25 2 6.5 2 6.5H2S4 16.25 4 9a7 7 0 017-7zM9.5 19a1.5 1.5 0 003 0" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg);" aria-label="1 nouvelle notification"></div>
+          </button>
+          <button class="avatar" data-screen="auth" aria-label="Profil utilisateur">KM</button>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding-bottom:0;">
+      <div class="balance-card">
+        <div class="bal-label">Solde disponible</div>
+        <div class="bal-amount">47 850 <span style="font-size:16px;opacity:.8;">FCFA</span></div>
+        <div class="bal-row">
+          <div class="bal-stat"><div class="stat-val">12</div><div class="stat-label">Transactions</div></div>
+          <div class="bal-stat"><div class="stat-val">185k</div><div class="stat-label">Total vendu</div></div>
+          <div class="bal-stat"><div class="stat-val">85%</div><div class="stat-label">Taux moyen</div></div>
+        </div>
+      </div>
+      <section class="quick-actions">
+        <div class="section-title">Actions rapides</div>
+        <div class="actions-grid">
+          <button class="action-btn" data-screen="catalogue" aria-label="Vendre une carte cadeau">
+            <div class="action-icon" style="background:rgba(16,185,129,.15);">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="16" height="11" rx="2" stroke="#10B981" stroke-width="1.5"/>
+                <path d="M2 8h16" stroke="#10B981" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="action-label">Vendre une carte</div>
+          </button>
+          <button class="action-btn" data-screen="withdraw" aria-label="Retirer l'argent">
+            <div class="action-icon" style="background:rgba(59,130,246,.15);">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 3v14M4 9l6-6 6 6" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="action-label">Retirer l'argent</div>
+          </button>
+          <button class="action-btn" data-screen="txstatus" aria-label="Consulter l'historique des transactions">
+            <div class="action-icon" style="background:rgba(245,158,11,.15);">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 10h14M3 6h14M3 14h8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="action-label">Historique</div>
+          </button>
+          <button class="action-btn" id="supportBtn" aria-label="Contacter le support">
+            <div class="action-icon" style="background:rgba(168,85,247,.15);">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2H6l-4 3V4z" stroke="#A855F7" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="action-label">Support</div>
+          </button>
+        </div>
+      </section>
+      <section class="recent-section">
+        <div class="section-title">Transactions récentes</div>
+        <div class="tx-item">
+          <div class="tx-logo" style="background:rgba(252,196,86,.15);color:#FCBB0A;">APP</div>
+          <div class="tx-info"><div class="tx-name">iTunes 50€</div><div class="tx-date">Aujourd'hui, 09:12</div></div>
+          <div class="tx-amount"><div class="tx-val status-paid">+42 500</div><div class="tx-status status-paid">Payée</div></div>
+        </div>
+        <div class="tx-item">
+          <div class="tx-logo" style="background:rgba(52,211,153,.15);color:#10B981;">BTN</div>
+          <div class="tx-info"><div class="tx-name">Bitnovo 25€</div><div class="tx-date">Hier, 14:30</div></div>
+          <div class="tx-amount"><div class="tx-val" style="color:var(--text2);">+20 000</div><div class="tx-status status-verif">Vérification</div></div>
+        </div>
+        <div class="tx-item">
+          <div class="tx-logo" style="background:rgba(99,102,241,.15);color:#818CF8;">STM</div>
+          <div class="tx-info"><div class="tx-name">Steam 100€</div><div class="tx-date">22 jan, 11:05</div></div>
+          <div class="tx-amount"><div class="tx-val status-paid">+82 000</div><div class="tx-status status-paid">Payée</div></div>
+        </div>
+        <div style="height:16px;"></div>
+      </section>
+    </div>
+    <nav class="nav-bar" aria-label="Navigation">
+      <button class="nav-item active" data-screen="dashboard" aria-current="page">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M3 9L10 3l7 6v9H13v-5H7v5H3V9z" stroke="#10B981" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <span class="nav-label" style="color:var(--green);">Accueil</span>
+      </button>
+      <button class="nav-item" data-screen="catalogue" aria-label="Cartes">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect x="2" y="3" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/>
+          <rect x="11" y="3" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/>
+          <rect x="2" y="12" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/>
+          <rect x="11" y="12" width="7" height="7" rx="1.5" stroke="#64748B" stroke-width="1.5"/>
+        </svg>
+        <span class="nav-label">Cartes</span>
+      </button>
+      <button class="nav-item" data-screen="txstatus" aria-label="Historique">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M3 5h14M3 10h14M3 15h8" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-label">Historique</span>
+      </button>
+      <button class="nav-item" data-screen="withdraw" aria-label="Retrait">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect x="3" y="5" width="14" height="12" rx="2" stroke="#64748B" stroke-width="1.5"/>
+          <path d="M3 9h14M7 13h2" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-label">Retrait</span>
+      </button>
+    </nav>
+    <div class="floating-toast" id="toast" role="status" aria-live="polite" aria-atomic="true">3 notifications non lues</div>
+  </div>
+
+  <!-- CATALOGUE -->
+  <div class="screen" id="catalogue" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <header class="cat-header">
+      <button class="back-btn" data-screen="dashboard" aria-label="Retour au tableau de bord">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="cat-title">Choisir une carte</div>
+    </header>
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" stroke="#64748B" stroke-width="1.5"/>
+        <path d="M11 11l3 3" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input type="search" placeholder="Rechercher..." aria-label="Rechercher une carte">
+    </div>
+    <div class="cards-grid" role="list">
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Apple iTunes - Taux: 85%">
+        <div class="gc-logo" style="background:rgba(252,196,86,.15);">🎵</div>
+        <div class="gc-name">Apple iTunes</div>
+        <div class="gc-rate">Taux : 85%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Bitnovo - Taux: 82%">
+        <div class="gc-logo" style="background:rgba(52,211,153,.15);">🔑</div>
+        <div class="gc-name">Bitnovo</div>
+        <div class="gc-rate">Taux : 82%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Steam - Taux: 78%">
+        <div class="gc-logo" style="background:rgba(99,102,241,.15);">🎮</div>
+        <div class="gc-name">Steam</div>
+        <div class="gc-rate">Taux : 78%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Amazon - Taux: 80%">
+        <div class="gc-logo" style="background:rgba(251,146,60,.15);">📦</div>
+        <div class="gc-name">Amazon</div>
+        <div class="gc-rate">Taux : 80%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Google Play - Taux: 75%">
+        <div class="gc-logo" style="background:rgba(52,211,153,.15);">🎮</div>
+        <div class="gc-name">Google Play</div>
+        <div class="gc-rate">Taux : 75%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Neosurf - Taux: 83%">
+        <div class="gc-logo" style="background:rgba(148,163,184,.1);">🔒</div>
+        <div class="gc-name">Neosurf</div>
+        <div class="gc-rate">Taux : 83%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" data-screen="sell" role="listitem" aria-label="Paysafecard - Taux: 76%">
+        <div class="gc-logo" style="background:rgba(236,72,153,.12);">💳</div>
+        <div class="gc-name">Paysafecard</div>
+        <div class="gc-rate">Taux : 76%</div>
+        <div class="gc-badge">⚡ Instant</div>
+      </button>
+      <button class="gift-card" id="moreCards" role="listitem" aria-label="Voir plus de cartes">
+        <div class="gc-logo" style="background:rgba(148,163,184,.1);">➕</div>
+        <div class="gc-name">Autres</div>
+        <div class="gc-rate" style="color:var(--text3);">Voir plus</div>
+      </button>
+      <div style="height:16px;grid-column:1/-1;"></div>
+    </div>
+  </div>
+
+  <!-- SELL FLOW -->
+  <div class="screen" id="sell" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <header class="auth-header">
+      <button class="back-btn" data-screen="catalogue" aria-label="Retour aux cartes">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="font-size:13px;color:var(--text2);">Vendre une carte</div>
+    </header>
+    <form class="sell-body" id="sellForm">
+      <div class="steps-indicator" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="4">
+        <div class="step-seg done"></div>
+        <div class="step-seg done"></div>
+        <div class="step-seg done"></div>
+        <div class="step-seg"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;background:var(--surface);padding:12px 16px;border-radius:14px;border:1px solid var(--border);">
+        <div style="width:44px;height:44px;background:rgba(252,196,86,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🎵</div>
+        <div><div style="font-size:15px;font-weight:700;color:var(--text);">Apple iTunes</div><div style="font-size:12px;color:var(--green);">Taux de rachat : 85%</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">Valeur de la carte</div>
+      <div class="amount-grid" role="group" aria-label="Sélectionner la valeur">
+        <button type="button" class="amount-chip" data-amount="10">10€</button>
+        <button type="button" class="amount-chip" data-amount="25">25€</button>
+        <button type="button" class="amount-chip active" data-amount="50">50€</button>
+        <button type="button" class="amount-chip" data-amount="100">100€</button>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="field">
+          <label for="customAmount">Valeur personnalisée</label>
+          <input id="customAmount" type="number" placeholder="Ex: 200€">
+        </div>
+      </div>
+      <div class="upload-area" tabindex="0" role="button" aria-label="Zone de téléchargement - cliquez pour ajouter une photo">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+            <path d="M11 3v12M6 8l5-5 5 5" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M3 16v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="upload-label">Photo du code carte</div>
+        <div class="upload-sub">Recto + Verso requis</div>
+      </div>
+      <div class="calc-box">
+        <div class="calc-row"><div class="calc-key">Valeur carte</div><div class="calc-val">50€</div></div>
+        <div class="calc-row"><div class="calc-key">Taux de rachat</div><div class="calc-val">85%</div></div>
+        <div class="calc-row"><div class="calc-key">Montant en EUR</div><div class="calc-val">42.50€</div></div>
+        <div class="calc-row"><div class="calc-key" style="font-weight:700;color:var(--text);">Vous recevez</div><div class="calc-val calc-total">35 700 FCFA</div></div>
+      </div>
+      <button type="button" class="btn-full" data-screen="txstatus">Confirmer la vente →</button>
+      <div style="height:20px;"></div>
+    </form>
+  </div>
+
+  <!-- TRANSACTION STATUS -->
+  <div class="screen" id="txstatus" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <header style="padding:16px 20px 0;display:flex;align-items:center;gap:12px;">
+      <button class="back-btn" data-screen="dashboard" aria-label="Retour au tableau de bord">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="font-size:13px;color:var(--text2);">Suivi de transaction</div>
+    </header>
+    <div class="tx-body" style="overflow-y:auto;">
+      <article class="tx-card-big">
+        <div class="tx-logo-big" style="background:rgba(252,196,86,.15);">🎵</div>
+        <div class="tx-title-big">Apple iTunes 50€</div>
+        <div class="tx-amount-big">+35 700 FCFA</div>
+        <div class="tx-details">
+          <div class="tx-detail-row"><div class="td-key">Réf. transaction</div><div class="td-val">#TXN-2024-8821</div></div>
+          <div class="tx-detail-row"><div class="td-key">Date</div><div class="td-val">Aujourd'hui 09:12</div></div>
+          <div class="tx-detail-row"><div class="td-key">Taux appliqué</div><div class="td-val">85%</div></div>
+          <div class="tx-detail-row"><div class="td-key">Statut</div><div class="td-val" style="color:#F59E0B;">En vérification</div></div>
+        </div>
+      </article>
+      <section>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">Progression</div>
+        <ol class="timeline" role="list">
+          <li class="tl-item">
+            <div class="tl-dot done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6l3 3 5-5" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/>
+            </svg></div>
+            <div><div class="tl-step">Carte soumise</div><div class="tl-time">09:12</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-dot active"><div style="width:8px;height:8px;border-radius:50%;background:#F59E0B;"></div></div>
+            <div><div class="tl-step">Vérification en cours</div><div class="tl-time">09:14 · en cours...</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-dot wait"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3);opacity:.4;"></div></div>
+            <div><div class="tl-step" style="color:var(--text3);">Acceptée</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-dot wait"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3);opacity:.4;"></div></div>
+            <div><div class="tl-step" style="color:var(--text3);">Paiement effectué</div></div>
+          </li>
+        </ol>
+      </section>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- WITHDRAW -->
+  <div class="screen" id="withdraw" role="main">
+    <header class="statusbar" aria-label="Status bar">
+      <span class="time">9:41</span>
+      <div class="icons" aria-hidden="true"><div class="bat"><div class="bat-fill"></div></div></div>
+    </header>
+    <header class="auth-header" style="padding:16px 20px 0;">
+      <button class="back-btn" data-screen="dashboard" aria-label="Retour au tableau de bord">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="font-size:13px;color:var(--text2);">Retrait</div>
+    </header>
+    <form class="sell-body" id="withdrawForm">
+      <div style="padding:16px 20px 12px;">
+        <div style="background:linear-gradient(135deg,#10B981,#059669);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:12px;color:rgba(255,255,255,.7);">Solde disponible</div><div style="font-size:22px;font-weight:800;color:#fff;">47 850 FCFA</div></div>
+          <div style="font-size:28px;">💳</div>
+        </div>
+      </div>
+      <div style="padding:0 20px 16px;font-size:14px;font-weight:700;color:var(--text);">Choisir la méthode</div>
+      <fieldset class="method-list" role="group" aria-label="Méthodes de retrait">
+        <legend style="display:none;">Méthodes de retrait</legend>
+        <button type="button" class="method-item active" data-method="orange-money">
+          <div class="method-logo" style="background:rgba(252,196,86,.15);color:#F59E0B;font-size:18px;">📱</div>
+          <div><div class="method-name">Orange Money</div><div class="method-sub">Paiement en 2 min</div></div>
+          <div class="method-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M2 5l2.5 2.5 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg></div>
+        </button>
+        <button type="button" class="method-item" data-method="mtn-money">
+          <div class="method-logo" style="background:rgba(252,196,86,.1);color:#F59E0B;font-size:18px;">📱</div>
+          <div><div class="method-name">MTN Money</div><div class="method-sub">Paiement en 2 min</div></div>
+        </button>
+        <button type="button" class="method-item" data-method="bank-transfer">
+          <div class="method-logo" style="background:rgba(59,130,246,.1);color:#3B82F6;font-size:18px;">🏦</div>
+          <div><div class="method-name">Virement bancaire</div><div class="method-sub">1-2 jours ouvrables</div></div>
+        </button>
+      </fieldset>
+      <div style="padding:0 20px;">
+        <div class="field">
+          <label for="phoneNumber">Numéro de téléphone</label>
+          <input id="phoneNumber" type="tel" placeholder="+225 07 00 00 00 00" required>
+        </div>
+        <div class="field">
+          <label for="withdrawAmount">Montant à retirer (FCFA)</label>
+          <input id="withdrawAmount" type="number" placeholder="Ex: 20000" required>
+        </div>
+        <div style="background:var(--surface);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;color:var(--text2);">Frais de retrait</span>
+          <span style="font-size:12px;font-weight:700;color:var(--green);">Gratuit</span>
+        </div>
+        <button type="button" class="btn-full" id="confirmWithdraw">Confirmer le retrait →</button>
+      </div>
+    </form>
+  </div>
+
 </div>
 
-<!-- CATALOGUE -->
-<div class="screen" id="catalogue">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="cat-header">
-    <button class="back-btn" onclick="go('dashboard')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <div class="cat-title">Choisir une carte</div>
-  </div>
-  <div class="search-bar">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#64748B" stroke-width="1.5"/><path d="M11 11l3 3" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/></svg>
-    <input placeholder="Rechercher...">
-  </div>
-  <div class="cards-grid">
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(252,196,86,.15);">🎵</div>
-      <div class="gc-name">Apple iTunes</div>
-      <div class="gc-rate">Taux : 85%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(52,211,153,.15);">🔑</div>
-      <div class="gc-name">Bitnovo</div>
-      <div class="gc-rate">Taux : 82%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(99,102,241,.15);">🎮</div>
-      <div class="gc-name">Steam</div>
-      <div class="gc-rate">Taux : 78%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(251,146,60,.15);">📦</div>
-      <div class="gc-name">Amazon</div>
-      <div class="gc-rate">Taux : 80%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(52,211,153,.15);">🎮</div>
-      <div class="gc-name">Google Play</div>
-      <div class="gc-rate">Taux : 75%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(148,163,184,.1);">🔒</div>
-      <div class="gc-name">Neosurf</div>
-      <div class="gc-rate">Taux : 83%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="go('sell')">
-      <div class="gc-logo" style="background:rgba(236,72,153,.12);">💳</div>
-      <div class="gc-name">Paysafecard</div>
-      <div class="gc-rate">Taux : 76%</div>
-      <div class="gc-badge">⚡ Instant</div>
-    </div>
-    <div class="gift-card" onclick="showToast('Bientôt disponible!')">
-      <div class="gc-logo" style="background:rgba(148,163,184,.1);">➕</div>
-      <div class="gc-name">Autres</div>
-      <div class="gc-rate" style="color:var(--text3);">Voir plus</div>
-    </div>
-    <div style="height:16px;grid-column:1/-1;"></div>
-  </div>
-</div>
+<script src="app.js" defer></script>
 
-<!-- SELL FLOW -->
-<div class="screen" id="sell">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="auth-header">
-    <button class="back-btn" onclick="go('catalogue')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <div style="font-size:13px;color:var(--text2);">Vendre une carte</div>
-  </div>
-  <div class="sell-body">
-    <div class="steps-indicator">
-      <div class="step-seg done"></div>
-      <div class="step-seg done"></div>
-      <div class="step-seg done"></div>
-      <div class="step-seg"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;background:var(--surface);padding:12px 16px;border-radius:14px;border:1px solid var(--border);">
-      <div style="width:44px;height:44px;background:rgba(252,196,86,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🎵</div>
-      <div><div style="font-size:15px;font-weight:700;color:var(--text);">Apple iTunes</div><div style="font-size:12px;color:var(--green);">Taux de rachat : 85%</div></div>
-    </div>
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">Valeur de la carte</div>
-    <div class="amount-grid">
-      <div class="amount-chip">10€</div>
-      <div class="amount-chip">25€</div>
-      <div class="amount-chip active">50€</div>
-      <div class="amount-chip">100€</div>
-    </div>
-    <div style="margin-bottom:16px;">
-      <div class="field"><label>Valeur personnalisée</label><input type="number" placeholder="Ex: 200€"></div>
-    </div>
-    <div class="upload-area">
-      <div class="upload-icon">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v12M6 8l5-5 5 5" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/><path d="M3 16v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="upload-label">Photo du code carte</div>
-      <div class="upload-sub">Recto + Verso requis</div>
-    </div>
-    <div class="calc-box">
-      <div class="calc-row"><div class="calc-key">Valeur carte</div><div class="calc-val">50€</div></div>
-      <div class="calc-row"><div class="calc-key">Taux de rachat</div><div class="calc-val">85%</div></div>
-      <div class="calc-row"><div class="calc-key">Montant en EUR</div><div class="calc-val">42.50€</div></div>
-      <div class="calc-row"><div class="calc-key" style="font-weight:700;color:var(--text);">Vous recevez</div><div class="calc-val calc-total">35 700 FCFA</div></div>
-    </div>
-    <button class="btn-full" onclick="go('txstatus')">Confirmer la vente →</button>
-    <div style="height:20px;"></div>
-  </div>
-</div>
-
-<!-- TRANSACTION STATUS -->
-<div class="screen" id="txstatus">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="tx-header" style="padding:16px 20px 0;display:flex;align-items:center;gap:12px;">
-    <button class="back-btn" onclick="go('dashboard')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <div style="font-size:13px;color:var(--text2);">Suivi de transaction</div>
-  </div>
-  <div class="tx-body" style="overflow-y:auto;">
-    <div class="tx-card-big">
-      <div class="tx-logo-big" style="background:rgba(252,196,86,.15);font-size:24px;">🎵</div>
-      <div class="tx-title-big">Apple iTunes 50€</div>
-      <div class="tx-amount-big">+35 700 FCFA</div>
-      <div class="tx-details">
-        <div class="tx-detail-row"><div class="td-key">Réf. transaction</div><div class="td-val">#TXN-2024-8821</div></div>
-        <div class="tx-detail-row"><div class="td-key">Date</div><div class="td-val">Aujourd'hui 09:12</div></div>
-        <div class="tx-detail-row"><div class="td-key">Taux appliqué</div><div class="td-val">85%</div></div>
-        <div class="tx-detail-row"><div class="td-key">Statut</div><div class="td-val" style="color:#F59E0B;">En vérification</div></div>
-      </div>
-    </div>
-    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">Progression</div>
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-dot done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div><div class="tl-step">Carte soumise</div><div class="tl-time">09:12</div></div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot active"><div style="width:8px;height:8px;border-radius:50%;background:#F59E0B;"></div></div>
-        <div><div class="tl-step">Vérification en cours</div><div class="tl-time">09:14 · en cours...</div></div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot wait"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3);opacity:.4;"></div></div>
-        <div><div class="tl-step" style="color:var(--text3);">Acceptée</div></div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot wait"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3);opacity:.4;"></div></div>
-        <div><div class="tl-step" style="color:var(--text3);">Paiement effectué</div></div>
-      </div>
-    </div>
-    <div style="height:20px;"></div>
-  </div>
-</div>
-
-<!-- WITHDRAW -->
-<div class="screen" id="withdraw">
-  <div class="statusbar"><span class="time">9:41</span><div class="icons"><div class="bat"><div class="bat-fill"></div></div></div></div>
-  <div class="auth-header" style="padding:16px 20px 0;">
-    <button class="back-btn" onclick="go('dashboard')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <div style="font-size:13px;color:var(--text2);">Retrait</div>
-  </div>
-  <div style="overflow-y:auto;flex:1;padding-bottom:20px;">
-    <div style="padding:16px 20px 12px;">
-      <div style="background:linear-gradient(135deg,#10B981,#059669);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:12px;color:rgba(255,255,255,.7);">Solde disponible</div><div style="font-size:22px;font-weight:800;color:#fff;">47 850 FCFA</div></div>
-        <div style="font-size:28px;">💳</div>
-      </div>
-    </div>
-    <div style="padding:0 20px 16px;font-size:14px;font-weight:700;color:var(--text);">Choisir la méthode</div>
-    <div class="method-list">
-      <div class="method-item active">
-        <div class="method-logo" style="background:rgba(252,196,86,.15);color:#F59E0B;font-size:18px;">📱</div>
-        <div><div class="method-name">Orange Money</div><div class="method-sub">Paiement en 2 min</div></div>
-        <div class="method-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-      </div>
-      <div class="method-item">
-        <div class="method-logo" style="background:rgba(252,196,86,.1);color:#F59E0B;font-size:18px;">📱</div>
-        <div><div class="method-name">MTN Money</div><div class="method-sub">Paiement en 2 min</div></div>
-      </div>
-      <div class="method-item">
-        <div class="method-logo" style="background:rgba(59,130,246,.1);color:#3B82F6;font-size:18px;">🏦</div>
-        <div><div class="method-name">Virement bancaire</div><div class="method-sub">1-2 jours ouvrables</div></div>
-      </div>
-    </div>
-    <div style="padding:0 20px;">
-      <div class="field"><label>Numéro de téléphone</label><input type="tel" placeholder="+225 07 00 00 00 00"></div>
-      <div class="field"><label>Montant à retirer (FCFA)</label><input type="number" placeholder="Ex: 20000"></div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;color:var(--text2);">Frais de retrait</span>
-        <span style="font-size:12px;font-weight:700;color:var(--green);">Gratuit</span>
-      </div>
-      <button class="btn-full" onclick="showToast('Demande de retrait envoyée ✓')">Confirmer le retrait →</button>
-    </div>
-  </div>
-</div>
-
-<script>
-function go(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const el=document.getElementById(id);
-  if(el)el.classList.add('active');
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  if(t){
-    t.textContent=msg||'3 notifications non lues';
-    t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),2500);
-  }
-}
-document.querySelectorAll('.amount-chip').forEach(c=>{
-  c.addEventListener('click',function(){
-    document.querySelectorAll('.amount-chip').forEach(x=>x.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
-document.querySelectorAll('.method-item').forEach(m=>{
-  m.addEventListener('click',function(){
-    document.querySelectorAll('.method-item').forEach(x=>x.classList.remove('active'));
-    this.classList.add('active');
-    const check=this.querySelector('.method-check');
-    if(!check){
-      const d=document.createElement('div');
-      d.className='method-check';
-      d.innerHTML='<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>';
-      this.appendChild(d);
-    }
-  });
-});
-</script>
 </body>
 </html>
